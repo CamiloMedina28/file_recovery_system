@@ -8,8 +8,8 @@ folder_escribir = None
 type_ = None
 drive = None
 file_extension = ['jpg', 'png', 'pdf']
-first_file_signature = {'jpg':b'\xff\xd8\xff', 'png':'', 'pdf':''}
-last_file_dignature = {'jpg': '', 'png':'', 'pdf':''}
+first_file_signature = {'jpg':b'\xff\xd8\xff\xe0\x00\x10\x4a\x46', 'png':'', 'pdf':''}
+last_file_signature = {'jpg': b'\xff\xd9', 'png':'', 'pdf':''}
 drives = ['%s:'%d for d in string.ascii_uppercase if os.path.exists('%s:'%d)]
 
 def intro(Select_drive_recover:bool ,Select_drive_save: bool,Select_file:bool):
@@ -67,21 +67,33 @@ def recover():
     log_file_handle = open("Log.txt", "w")
     counter_coincidencia = 0
     counter_file = 0
-    pattern = first_file_signature[file_extension[type_-1]]
+    pattern_beginning = first_file_signature[file_extension[type_-1]]
+    pattern_end = last_file_signature[file_extension[type_-1]]
     drive_open = f"\\\\.\\{drives[drive-1]}"
-    print(drive_open)
     string =True
     with open(drive_open, "rb") as recover:
         while string:
             string = recover.read(512)
-            find = regex.search(pattern, string, regex.IGNORECASE)
-            log_file_handle.write("coincidencia: "+ str(counter_coincidencia) + '=' +str(find) + "\n")
+            find = regex.search(pattern_beginning, string, regex.IGNORECASE)
+            log_file_handle.write("coincidencia: "+ str(counter_coincidencia) + ' = ' +str(find) + "\n")
             counter_coincidencia += 1
-            if find:
+            if find: 
+                print("→" * 15 + 'Archivo encontrado' +'←' * 15)
+                print(f"Guardado como {counter_file}.{file_extension[type_-1]}")
+                saving = True
                 with open(f"{folder_escribir}/{counter_file}.{file_extension[type_-1]}", "wb") as recovered_file:
-                    print(string)
-                    recovered_file.write(pattern + string)
-        log_file_handle.close()
+                    recovered_file.write(string[find.start():])
+                    while saving:
+                        string = recover.read(512)
+                        coincidence = regex.search(pattern_end, string, regex.IGNORECASE)
+                        if not coincidence:
+                            recovered_file.write(string)
+                        else:
+                            recovered_file.write(string[:coincidence.start()] + pattern_end)
+                            saving = False
+                            break
+                counter_file += 1
+    log_file_handle.close()
 
 if __name__ == "__main__":
     intro(Select_drive_recover=False, Select_drive_save=True, Select_file= False)
