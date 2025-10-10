@@ -38,7 +38,6 @@ class FileRecovery():
                 tail = file_content[-len(beginning_trail_bytes):]
                 find = re.search(beginning_trail_bytes, file_content)
                 if find:
-
                     saving = True
                     with open(f'{self.destiny}/{counter_coincidencia}.{self.file_extension}', 'wb') as destiny_file:
                         destiny_file.write(file_content[find.start():])
