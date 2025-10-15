@@ -1,6 +1,6 @@
 {
     "jpg": {
-        "beginning": "\\xaa",
+        "beginning": "\\xff\\xd8\\xff\\xe0\\x00\\x10\\x4a\\x46",
         "end": "\\xff\\xd9",
         "extras": []
     },
